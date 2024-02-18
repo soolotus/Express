@@ -15,9 +15,9 @@ app.get('/', (req, res) => {
     )
     res.send(html)
   })
-    
-
 })
+
+app.get('/page/:pageId/:chapterId', (req, res)=> res.send(req.params))
 
 app.listen(3000, ()=>console.log("sucess"))
 /*
