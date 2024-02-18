@@ -2,6 +2,9 @@ const express = require('express')
 const app = express()
 const template = require('./lib/template.js');
 const fs = require("fs")
+const path = require('path');
+const sanitizeHtml = require('sanitize-html');
+
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', (req, res) => {
@@ -17,9 +20,33 @@ app.get('/', (req, res) => {
   })
 })
 
-app.get('/page/:pageId/:chapterId', (req, res)=> res.send(req.params))
+app.get('/page/:pageId', (req, res)=> 
+{
+  fs.readdir('./data', function(error, filelist){
+    var filteredId = path.parse(req.params.pageId).base;
+    fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
+      var title = req.params.pageId;
+      var sanitizedTitle = sanitizeHtml(title);
+      var sanitizedDescription = sanitizeHtml(description, {
+        allowedTags:['h1']
+      });
+      var list = template.list(filelist);
+      var html = template.HTML(sanitizedTitle, list,
+        `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+        ` <a href="/create">create</a>
+          <a href="/update?id=${sanitizedTitle}">update</a>
+          <form action="delete_process" method="post">
+            <input type="hidden" name="id" value="${sanitizedTitle}">
+            <input type="submit" value="delete">
+          </form>`
+      );
+      res.send(html);
+}
+)})})
 
 app.listen(3000, ()=>console.log("sucess"))
+
+
 /*
 var http = require('http');
 var fs = require('fs');
@@ -163,5 +190,4 @@ var app = http.createServer(function(request,response){
       response.end('Not found');
     }
 });
-app.listen(3000);
-*/
+app.listen(3000) */
