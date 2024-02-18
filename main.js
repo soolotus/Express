@@ -36,7 +36,7 @@ app.get('/page/:pageId', (req, res)=>
         `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
         ` <a href="/create">create</a>
           <a href="/update/${sanitizedTitle}">update</a>
-          <form action="delete_process" method="post">
+          <form action="/delete_process" method="post">
             <input type="hidden" name="id" value="${sanitizedTitle}">
             <input type="submit" value="delete">
           </form>`
@@ -118,12 +118,27 @@ app.post('/update_process', (req, res)=>{
           var description = post.description;
           fs.rename(`data/${id}`, `data/${title}`, function(error){
             fs.writeFile(`data/${title}`, description, 'utf8', function(err){
-              res.writeHead(302, {Location: `/page/${title}`});
-              res.end();
+              
+              res.redirect(`/page/${title}`)
             })
           });
       });
 
+})
+
+app.post('/delete_process', (req, res)=>{
+  var body = '';
+      req.on('data', function(data){
+          body = body + data;
+      });
+      req.on('end', function(){
+          var post = qs.parse(body);
+          var id = post.id;
+          var filteredId = path.parse(id).base;
+          fs.unlink(`data/${filteredId}`, function(error){
+            res.redirect('/')
+          })
+      });
 })
 
 app.listen(3000, ()=>console.log("sucess"))
