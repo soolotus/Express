@@ -1,9 +1,22 @@
 const express = require('express')
 const app = express()
+const template = require('./lib/template.js');
+const fs = require("fs")
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', (req, res) => {
-  res.send('hello world')
+  fs.readdir('./data', function(error, filelist){
+    var title = 'Welcome';
+    var description = 'Hello, Node.js';
+    var list = template.list(filelist);
+    var html = template.HTML(title, list,
+      `<h2>${title}</h2>${description}`,
+      `<a href="/create">create</a>`
+    )
+    res.send(html)
+  })
+    
+
 })
 
 app.listen(3000, ()=>console.log("sucess"))
