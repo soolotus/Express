@@ -4,6 +4,7 @@ const template = require('./lib/template.js');
 const fs = require("fs")
 const path = require('path');
 const sanitizeHtml = require('sanitize-html');
+const qs = require('querystring');
 
 
 // respond with "hello world" when a GET request is made to the homepage
@@ -43,6 +44,42 @@ app.get('/page/:pageId', (req, res)=>
       res.send(html);
 }
 )})})
+
+app.get('/create', (req, res)=>{
+  fs.readdir('./data', function(error, filelist){
+    var title = 'WEB - create';
+    var list = template.list(filelist);
+    var html = template.HTML(title, list, `
+      <form action="/create_process" method="post">
+        <p><input type="text" name="title" placeholder="title"></p>
+        <p>
+          <textarea name="description" placeholder="description"></textarea>
+        </p>
+        <p>
+          <input type="submit">
+        </p>
+      </form>
+    `, '');
+    res.send(html);
+  });
+})
+
+app.post('/create_process', (req, res)=>{
+  var body = '';
+  req.on('data', function(data){
+      body = body + data;
+  });
+  req.on('end', function(){
+      var post = qs.parse(body);
+      var title = post.title;
+      var description = post.description;
+      fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+        res.writeHead(302, {Location: `/page/${title}`});
+        res.end();
+      })
+  });
+})
+
 
 app.listen(3000, ()=>console.log("sucess"))
 
