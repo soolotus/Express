@@ -5,7 +5,9 @@ const fs = require("fs")
 const path = require('path');
 const sanitizeHtml = require('sanitize-html');
 const qs = require('querystring');
+const bodyParser = require('body-parser')
 
+app.use(bodyParser.urlencoded({extended: false}))
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', (req, res) => {
@@ -65,6 +67,7 @@ app.get('/create', (req, res)=>{
 })
 
 app.post('/create_process', (req, res)=>{
+  /*
   var body = '';
   req.on('data', function(data){
       body = body + data;
@@ -78,6 +81,15 @@ app.post('/create_process', (req, res)=>{
         res.end();
       })
   });
+  */
+
+ var post =  req.body
+      var title = post.title;
+      var description = post.description;
+      fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+        res.writeHead(302, {Location: `/page/${title}`});
+        res.end();
+      })
 })
 
 app.get('/update/:updateId', (req, res)=>{
@@ -107,12 +119,8 @@ app.get('/update/:updateId', (req, res)=>{
 })
 
 app.post('/update_process', (req, res)=>{
-  var body = '';
-      req.on('data', function(data){
-          body = body + data;
-      });
-      req.on('end', function(){
-          var post = qs.parse(body);
+  
+          var post = req.body;
           var id = post.id;
           var title = post.title;
           var description = post.description;
@@ -122,23 +130,19 @@ app.post('/update_process', (req, res)=>{
               res.redirect(`/page/${title}`)
             })
           });
-      });
+      
 
 })
 
 app.post('/delete_process', (req, res)=>{
-  var body = '';
-      req.on('data', function(data){
-          body = body + data;
-      });
-      req.on('end', function(){
-          var post = qs.parse(body);
+  
+          var post = req.body ;
           var id = post.id;
           var filteredId = path.parse(id).base;
           fs.unlink(`data/${filteredId}`, function(error){
             res.redirect('/')
           })
-      });
+      
 })
 
 app.listen(3000, ()=>console.log("sucess"))
