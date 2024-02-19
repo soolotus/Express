@@ -6,8 +6,10 @@ const path = require('path');
 const sanitizeHtml = require('sanitize-html');
 const qs = require('querystring');
 const bodyParser = require('body-parser')
+const compression = require('compression')
 
 app.use(bodyParser.urlencoded({extended: false}))
+app.use(compression())
 
 // respond with "hello world" when a GET request is made to the homepage
 app.get('/', (req, res) => {
