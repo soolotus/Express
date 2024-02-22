@@ -37,27 +37,34 @@ app.get('/', (req, res) => {
   
 })
 
-app.get('/page/:pageId', (req, res)=> {
+app.get('/page/:pageId', (req, res, next)=> {
   console.log(req.list)
  
     var filteredId = path.parse(req.params.pageId).base;
     fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
-      var title = req.params.pageId;
-      var sanitizedTitle = sanitizeHtml(title);
-      var sanitizedDescription = sanitizeHtml(description, {
-        allowedTags:['h1']
-      });
-      var list = template.list(req.list);
-      var html = template.HTML(sanitizedTitle, list,
-        `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-        ` <a href="/create">create</a>
-          <a href="/update/${sanitizedTitle}">update</a>
-          <form action="/delete_process" method="post">
-            <input type="hidden" name="id" value="${sanitizedTitle}">
-            <input type="submit" value="delete">
-          </form>`
-      );
-      res.send(html);
+      if (err) {
+        next(err)
+
+      } else {
+      
+       var title = req.params.pageId;
+        var sanitizedTitle = sanitizeHtml(title);
+        var sanitizedDescription = sanitizeHtml(description, {
+          allowedTags:['h1']
+        });
+        var list = template.list(req.list);
+        var html = template.HTML(sanitizedTitle, list,
+          `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+          ` <a href="/create">create</a>
+            <a href="/update/${sanitizedTitle}">update</a>
+            <form action="/delete_process" method="post">
+              <input type="hidden" name="id" value="${sanitizedTitle}">
+              <input type="submit" value="delete">
+            </form>`
+        );
+        res.send(html);
+      }
+      
 }
 )})
 
@@ -159,6 +166,16 @@ app.post('/delete_process', (req, res)=>{
             res.redirect('/')
           })
       
+})
+
+
+
+app.use((req, res, next)=>{
+  res.status(404).send("Sorry cannot find that")
+})
+app.use((err, req, res, next)=>{
+  console.error(err.stack)
+  res.status(500).send('something broke')
 })
 
 app.listen(3000, ()=>console.log("sucess"))
